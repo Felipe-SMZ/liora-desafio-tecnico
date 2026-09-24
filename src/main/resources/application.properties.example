@@ -1,0 +1,33 @@
+spring.application.name=liora-credit-agent
+
+# ---- API da Liora Energia ----
+liora.api.base-url=https://liora-credit-flow.lovable.app/api/public/v1
+liora.api.token=${LIORA_TOKEN}
+
+# Tamanho de pagina usado em GET /solicitacoes (maximo permitido pela API: 200)
+liora.api.page-size=200
+
+# ---- Resiliencia (Resilience4j via Spring Cloud Circuit Breaker) ----
+# A doc da API avisa que GET /instalacao/{uc}/debitos pode devolver 503 de
+# proposito (instabilidade simulada), com header Retry-After. Estas instancias
+# cobrem especificamente essa chamada.
+resilience4j.retry.instances.debitosInstalacao.max-attempts=3
+resilience4j.retry.instances.debitosInstalacao.wait-duration=500ms
+resilience4j.retry.instances.debitosInstalacao.enable-exponential-backoff=true
+resilience4j.retry.instances.debitosInstalacao.exponential-backoff-multiplier=2
+
+resilience4j.circuitbreaker.instances.debitosInstalacao.sliding-window-size=20
+resilience4j.circuitbreaker.instances.debitosInstalacao.failure-rate-threshold=50
+resilience4j.circuitbreaker.instances.debitosInstalacao.wait-duration-in-open-state=10s
+resilience4j.circuitbreaker.instances.debitosInstalacao.permitted-number-of-calls-in-half-open-state=5
+
+# ---- Regras de decisao (parametrizaveis, evita numero magico no codigo) ----
+liora.decisao.telefone.fraude-score-reprovacao=80
+liora.decisao.telefone.fraude-score-analise-manual=40
+
+# ---- Logging ----
+logging.level.com.liora.creditagent=INFO
+logging.level.org.springframework.web.client=WARN
+
+# ---- Actuator (health check basico) ----
+management.endpoints.web.exposure.include=health,info
