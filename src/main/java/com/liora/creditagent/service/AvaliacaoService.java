@@ -5,12 +5,7 @@ import com.liora.creditagent.client.dto.AvaliacaoResponse;
 import com.liora.creditagent.client.dto.SolicitacaoResponse;
 import com.liora.creditagent.client.exception.ServicoTemporariamenteIndisponivelException;
 import com.liora.creditagent.domain.decision.DecisionEngine;
-import com.liora.creditagent.domain.decision.rule.RegraBlacklist;
-import com.liora.creditagent.domain.decision.rule.RegraDebitos;
-import com.liora.creditagent.domain.decision.rule.RegraEndereco;
-import com.liora.creditagent.domain.decision.rule.RegraIdade;
-import com.liora.creditagent.domain.decision.rule.RegraTelefone;
-import com.liora.creditagent.domain.decision.rule.RegraTitularidade;
+import com.liora.creditagent.domain.decision.rule.*;
 import com.liora.creditagent.domain.model.ResultadoDecisao;
 import com.liora.creditagent.domain.model.ResultadoRegra;
 import com.liora.creditagent.domain.model.StatusVerificacao;
@@ -190,7 +185,19 @@ public class AvaliacaoService {
                     ServicoTemporariamenteIndisponivelException e
             ) {
 
+                log.warn(
+                        "Serviço de débitos indisponível para solicitação {}. Tentativa {}/{}",
+                        solicitacao.solicitacaoId(),
+                        tentativa,
+                        MAX_TENTATIVAS_DEBITOS
+                );
+
                 if (tentativa == MAX_TENTATIVAS_DEBITOS) {
+
+                    log.warn(
+                            "Consulta de débitos falhou em todas as tentativas para solicitação {}. Encaminhando para análise manual",
+                            solicitacao.solicitacaoId()
+                    );
 
                     return new ResultadoRegra(
                             TipoVerificacao.DEBITOS_INSTALACAO,
