@@ -38,3 +38,6 @@ application.yml
 application-local.properties
 application-local.yml
 .env
+
+# Permite versionar apenas a configuração de testes
+!src/test/resources/application.properties
