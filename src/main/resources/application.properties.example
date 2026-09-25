@@ -30,6 +30,7 @@ liora.agente.versao=v1.0.0
 
 # ---- Processamento ----
 liora.processamento.executar=false
+liora.processamento.solicitacao-id=
 
 # ---- Logging ----
 logging.level.com.liora.creditagent=INFO

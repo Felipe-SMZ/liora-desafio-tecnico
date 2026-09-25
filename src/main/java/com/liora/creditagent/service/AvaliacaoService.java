@@ -15,6 +15,8 @@ import com.liora.creditagent.domain.model.ResultadoDecisao;
 import com.liora.creditagent.domain.model.ResultadoRegra;
 import com.liora.creditagent.domain.model.StatusVerificacao;
 import com.liora.creditagent.domain.model.TipoVerificacao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,6 +24,9 @@ import java.util.List;
 
 @Service
 public class AvaliacaoService {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(AvaliacaoService.class);
 
     private static final int MAX_TENTATIVAS_DEBITOS = 2;
 
@@ -108,15 +113,31 @@ public class AvaliacaoService {
         ResultadoDecisao resultado =
                 avaliarSolicitacao(solicitacao);
 
+        log.info(
+                "Solicitação {} avaliada com decisão {}",
+                solicitacao.solicitacaoId(),
+                resultado.decisao()
+        );
+
         var avaliacaoRequest =
                 avaliacaoMapper.mapear(
                         solicitacao,
                         resultado
                 );
 
-        return apiClient.enviarAvaliacao(
-                avaliacaoRequest
+        var resposta =
+                apiClient.enviarAvaliacao(
+                        avaliacaoRequest
+                );
+
+        log.info(
+                "Avaliação da solicitação {} enviada com sucesso. Avaliação: {}, status: {}",
+                solicitacao.solicitacaoId(),
+                resposta.avaliacaoId(),
+                resposta.status()
         );
+
+        return resposta;
     }
 
     private ResultadoRegra avaliarBlacklist(
