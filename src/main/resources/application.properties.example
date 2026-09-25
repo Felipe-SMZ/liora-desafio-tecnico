@@ -28,6 +28,8 @@ liora.decisao.telefone.fraude-score-reprovacao=80
 # ---- Versao do agente ----
 liora.agente.versao=v1.0.0
 
+# ---- Processamento ----
+liora.processamento.executar=false
 
 # ---- Logging ----
 logging.level.com.liora.creditagent=INFO
