@@ -64,9 +64,9 @@ public class ProcessamentoService {
                     falhas++;
 
                     log.error(
-                            "Erro ao processar solicitação {}: {}",
+                            "Erro ao processar solicitação {}",
                             solicitacao.solicitacaoId(),
-                            e.getMessage()
+                            e
                     );
                 }
             }
