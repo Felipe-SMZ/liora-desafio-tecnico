@@ -169,4 +169,82 @@ class LioraApiClientTest {
         assertThat(request.getHeader("Authorization"))
                 .isEqualTo("Bearer token-teste");
     }
+
+    @Test
+    void deveBuscarSolicitacoesPaginadas() throws InterruptedException {
+
+        String responseBody = """
+                {
+                  "solicitacoes": [
+                    {
+                      "solicitacao_id": "SOL-2026-001",
+                      "tipo_pessoa": "PF",
+                      "cpf_cnpj": "432.108.765-09",
+                      "nome_solicitante": "Carlos Eduardo Mendes",
+                      "data_nascimento": "1985-03-12",
+                      "telefone": "5511987654321",
+                      "tipo_imovel": "proprio",
+                      "uc": "3001234567",
+                      "distribuidora": "ENEL SP",
+                      "endereco_logradouro": "Rua das Acácias",
+                      "endereco_numero": "250",
+                      "endereco_bairro": "Jardim Paulista",
+                      "endereco_cidade": "São Paulo",
+                      "endereco_uf": "SP",
+                      "endereco_cep": "01401-000",
+                      "conta_luz_titular": "Carlos Eduardo Mendes",
+                      "conta_luz_titular_cpf_cnpj": "432.108.765-09",
+                      "conta_luz_emissao": "2026-04-15",
+                      "contrato_locacao_vigente": null,
+                      "contrato_locacao_vencimento": null,
+                      "vinculo_empresa": null
+                    }
+                  ],
+                  "pagination": {
+                    "total": 999,
+                    "limit": 200,
+                    "offset": 0
+                  }
+                }
+                """;
+
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .addHeader("Content-Type", "application/json")
+                        .setBody(responseBody)
+        );
+
+        var response = client.buscarSolicitacoes(200, 0);
+
+        assertThat(response).isNotNull();
+
+        assertThat(response.solicitacoes())
+                .hasSize(1);
+
+        assertThat(response.solicitacoes().getFirst().solicitacaoId())
+                .isEqualTo("SOL-2026-001");
+
+        assertThat(response.pagination().total())
+                .isEqualTo(999);
+
+        assertThat(response.pagination().limit())
+                .isEqualTo(200);
+
+        assertThat(response.pagination().offset())
+                .isZero();
+
+        var request = mockWebServer.takeRequest();
+
+        assertThat(request.getMethod())
+                .isEqualTo("GET");
+
+        assertThat(request.getPath())
+                .isEqualTo(
+                        "/api/public/v1/solicitacoes?limit=200&offset=0"
+                );
+
+        assertThat(request.getHeader("Authorization"))
+                .isEqualTo("Bearer token-teste");
+    }
 }

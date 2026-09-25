@@ -1,6 +1,7 @@
 package com.liora.creditagent.client;
 
 import com.liora.creditagent.client.dto.SolicitacaoResponse;
+import com.liora.creditagent.client.dto.SolicitacoesResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -20,5 +21,18 @@ public class LioraApiClient {
                 .uri("/solicitacoes/{id}", solicitacaoId)
                 .retrieve()
                 .body(SolicitacaoResponse.class);
+    }
+
+    public SolicitacoesResponse buscarSolicitacoes(int limit, int offset) {
+
+        return restClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/solicitacoes")
+                        .queryParam("limit", limit)
+                        .queryParam("offset", offset)
+                        .build())
+                .retrieve()
+                .body(SolicitacoesResponse.class);
     }
 }
