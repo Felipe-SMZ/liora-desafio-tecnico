@@ -1,19 +1,10 @@
 package com.liora.creditagent.service;
 
 import com.liora.creditagent.client.LioraApiClient;
-import com.liora.creditagent.client.dto.BlacklistResponse;
-import com.liora.creditagent.client.dto.DebitosResponse;
-import com.liora.creditagent.client.dto.EnderecoValidacaoResponse;
-import com.liora.creditagent.client.dto.SolicitacaoResponse;
-import com.liora.creditagent.client.dto.TelefoneValidacaoResponse;
+import com.liora.creditagent.client.dto.*;
 import com.liora.creditagent.client.exception.ServicoTemporariamenteIndisponivelException;
 import com.liora.creditagent.domain.decision.DecisionEngine;
-import com.liora.creditagent.domain.decision.rule.RegraBlacklist;
-import com.liora.creditagent.domain.decision.rule.RegraDebitos;
-import com.liora.creditagent.domain.decision.rule.RegraEndereco;
-import com.liora.creditagent.domain.decision.rule.RegraIdade;
-import com.liora.creditagent.domain.decision.rule.RegraTelefone;
-import com.liora.creditagent.domain.decision.rule.RegraTitularidade;
+import com.liora.creditagent.domain.decision.rule.*;
 import com.liora.creditagent.domain.model.Decisao;
 import com.liora.creditagent.domain.model.ResultadoRegra;
 import com.liora.creditagent.domain.model.StatusVerificacao;
@@ -28,7 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AvaliacaoServiceTest {
@@ -260,6 +251,10 @@ class AvaliacaoServiceTest {
                                         verificacao.status()
                                                 == StatusVerificacao.ANALISE_MANUAL
                 );
+        verify(
+                apiClient,
+                times(2)
+        ).consultarDebitos(solicitacao.uc());
     }
 
     private ResultadoRegra aprovado(

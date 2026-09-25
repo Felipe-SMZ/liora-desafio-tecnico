@@ -5,7 +5,12 @@ import com.liora.creditagent.client.dto.AvaliacaoResponse;
 import com.liora.creditagent.client.dto.SolicitacaoResponse;
 import com.liora.creditagent.client.exception.ServicoTemporariamenteIndisponivelException;
 import com.liora.creditagent.domain.decision.DecisionEngine;
-import com.liora.creditagent.domain.decision.rule.*;
+import com.liora.creditagent.domain.decision.rule.RegraBlacklist;
+import com.liora.creditagent.domain.decision.rule.RegraDebitos;
+import com.liora.creditagent.domain.decision.rule.RegraEndereco;
+import com.liora.creditagent.domain.decision.rule.RegraIdade;
+import com.liora.creditagent.domain.decision.rule.RegraTelefone;
+import com.liora.creditagent.domain.decision.rule.RegraTitularidade;
 import com.liora.creditagent.domain.model.ResultadoDecisao;
 import com.liora.creditagent.domain.model.ResultadoRegra;
 import com.liora.creditagent.domain.model.StatusVerificacao;
@@ -17,6 +22,8 @@ import java.util.List;
 
 @Service
 public class AvaliacaoService {
+
+    private static final int MAX_TENTATIVAS_DEBITOS = 2;
 
     private final LioraApiClient apiClient;
     private final RegraIdade regraIdade;
@@ -79,10 +86,9 @@ public class AvaliacaoService {
                 regraEndereco.avaliar(endereco)
         );
 
-        var telefone =
-                apiClient.validarTelefone(
-                        solicitacao.telefone()
-                );
+        var telefone = apiClient.validarTelefone(
+                solicitacao.telefone()
+        );
 
         verificacoes.add(
                 regraTelefone.avaliar(telefone)
@@ -102,13 +108,15 @@ public class AvaliacaoService {
         ResultadoDecisao resultado =
                 avaliarSolicitacao(solicitacao);
 
-        var request =
+        var avaliacaoRequest =
                 avaliacaoMapper.mapear(
                         solicitacao,
                         resultado
                 );
 
-        return apiClient.enviarAvaliacao(request);
+        return apiClient.enviarAvaliacao(
+                avaliacaoRequest
+        );
     }
 
     private ResultadoRegra avaliarBlacklist(
@@ -131,31 +139,51 @@ public class AvaliacaoService {
                         solicitacao.cpfCnpj()
                 );
 
-        return regraBlacklist.avaliar(blacklist);
+        return regraBlacklist.avaliar(
+                blacklist
+        );
     }
 
     private ResultadoRegra avaliarDebitos(
             SolicitacaoResponse solicitacao
     ) {
 
-        try {
-
-            var debitos =
-                    apiClient.consultarDebitos(
-                            solicitacao.uc()
-                    );
-
-            return regraDebitos.avaliar(debitos);
-
-        } catch (
-                ServicoTemporariamenteIndisponivelException e
+        for (
+                int tentativa = 1;
+                tentativa <= MAX_TENTATIVAS_DEBITOS;
+                tentativa++
         ) {
 
-            return new ResultadoRegra(
-                    TipoVerificacao.DEBITOS_INSTALACAO,
-                    StatusVerificacao.ANALISE_MANUAL,
-                    "Não foi possível consultar os débitos da instalação"
-            );
+            try {
+
+                var debitos =
+                        apiClient.consultarDebitos(
+                                solicitacao.uc()
+                        );
+
+                return regraDebitos.avaliar(
+                        debitos
+                );
+
+            } catch (
+                    ServicoTemporariamenteIndisponivelException e
+            ) {
+
+                if (tentativa == MAX_TENTATIVAS_DEBITOS) {
+
+                    return new ResultadoRegra(
+                            TipoVerificacao.DEBITOS_INSTALACAO,
+                            StatusVerificacao.ANALISE_MANUAL,
+                            "Serviço de débitos indisponível após "
+                                    + MAX_TENTATIVAS_DEBITOS
+                                    + " tentativas"
+                    );
+                }
+            }
         }
+
+        throw new IllegalStateException(
+                "Fluxo inesperado na consulta de débitos"
+        );
     }
 }
