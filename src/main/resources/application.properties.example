@@ -25,6 +25,10 @@ resilience4j.circuitbreaker.instances.debitosInstalacao.permitted-number-of-call
 liora.decisao.telefone.fraude-score-aprovacao=30
 liora.decisao.telefone.fraude-score-reprovacao=80
 
+# ---- Versao do agente ----
+liora.agente.versao=v1.0.0
+
+
 # ---- Logging ----
 logging.level.com.liora.creditagent=INFO
 logging.level.org.springframework.web.client=WARN
