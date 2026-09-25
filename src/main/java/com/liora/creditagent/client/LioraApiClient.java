@@ -1,6 +1,13 @@
 package com.liora.creditagent.client;
 
-import com.liora.creditagent.client.dto.*;
+import com.liora.creditagent.client.dto.BlacklistResponse;
+import com.liora.creditagent.client.dto.DebitosResponse;
+import com.liora.creditagent.client.dto.EnderecoValidacaoResponse;
+import com.liora.creditagent.client.dto.SolicitacaoResponse;
+import com.liora.creditagent.client.dto.SolicitacoesResponse;
+import com.liora.creditagent.client.dto.TelefoneValidacaoResponse;
+import com.liora.creditagent.client.exception.ServicoTemporariamenteIndisponivelException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -77,5 +84,23 @@ public class LioraApiClient {
                         .build())
                 .retrieve()
                 .body(EnderecoValidacaoResponse.class);
+    }
+
+    public DebitosResponse consultarDebitos(String uc) {
+
+        return restClient
+                .get()
+                .uri("/instalacao/{uc}/debitos", uc)
+                .retrieve()
+                .onStatus(
+                        status -> status == HttpStatus.SERVICE_UNAVAILABLE,
+                        (request, response) -> {
+                            throw new ServicoTemporariamenteIndisponivelException(
+                                    "Serviço de débitos temporariamente indisponível",
+                                    null
+                            );
+                        }
+                )
+                .body(DebitosResponse.class);
     }
 }

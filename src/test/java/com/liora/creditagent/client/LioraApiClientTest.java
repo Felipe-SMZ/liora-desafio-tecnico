@@ -1,5 +1,6 @@
 package com.liora.creditagent.client;
 
+import com.liora.creditagent.client.exception.ServicoTemporariamenteIndisponivelException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @SpringBootTest
 class LioraApiClientTest {
@@ -408,6 +410,112 @@ class LioraApiClientTest {
                                 "&logradouro=Rua%20das%20Ac%C3%A1cias" +
                                 "&cidade=S%C3%A3o%20Paulo" +
                                 "&uf=SP"
+                );
+
+        assertThat(request.getHeader("Authorization"))
+                .isEqualTo("Bearer token-teste");
+    }
+
+    @Test
+    void deveConsultarDebitosDaInstalacao()
+            throws InterruptedException {
+
+        String responseBody = """
+                {
+                  "uc": "3001234567",
+                  "status": "regular",
+                  "debitos_total": 0,
+                  "faturas_em_atraso": 0,
+                  "historico_inadimplencia": false,
+                  "corte_programado": false
+                }
+                """;
+
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .addHeader(
+                                "Content-Type",
+                                "application/json"
+                        )
+                        .setBody(responseBody)
+        );
+
+        var response =
+                client.consultarDebitos("3001234567");
+
+        assertThat(response).isNotNull();
+
+        assertThat(response.uc())
+                .isEqualTo("3001234567");
+
+        assertThat(response.status())
+                .isEqualTo("regular");
+
+        assertThat(response.debitosTotal())
+                .isEqualByComparingTo("0");
+
+        assertThat(response.faturasEmAtraso())
+                .isZero();
+
+        assertThat(response.historicoInadimplencia())
+                .isFalse();
+
+        assertThat(response.corteProgramado())
+                .isFalse();
+
+        var request = mockWebServer.takeRequest();
+
+        assertThat(request.getMethod())
+                .isEqualTo("GET");
+
+        assertThat(request.getPath())
+                .isEqualTo(
+                        "/api/public/v1/instalacao/3001234567/debitos"
+                );
+
+        assertThat(request.getHeader("Authorization"))
+                .isEqualTo("Bearer token-teste");
+    }
+
+    @Test
+    void deveInformarIndisponibilidadeTemporariaAoConsultarDebitos()
+            throws InterruptedException {
+
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(503)
+                        .addHeader(
+                                "Content-Type",
+                                "application/json"
+                        )
+                        .setBody("""
+                                {
+                                  "error": "service_unavailable",
+                                  "message": "Serviço temporariamente indisponível",
+                                  "retry_after": 30
+                                }
+                                """)
+        );
+
+        assertThatThrownBy(
+                () -> client.consultarDebitos("3001234569")
+        )
+                .isInstanceOf(
+                        ServicoTemporariamenteIndisponivelException.class
+                )
+                .hasMessage(
+                        "Serviço de débitos temporariamente indisponível"
+                );
+
+        var request = mockWebServer.takeRequest();
+
+        assertThat(request.getMethod())
+                .isEqualTo("GET");
+
+        assertThat(request.getPath())
+                .isEqualTo(
+                        "/api/public/v1/instalacao/3001234569/debitos"
                 );
 
         assertThat(request.getHeader("Authorization"))
