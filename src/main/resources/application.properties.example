@@ -31,3 +31,6 @@ logging.level.org.springframework.web.client=WARN
 
 # ---- Actuator (health check basico) ----
 management.endpoints.web.exposure.include=health,info
+
+# ---- Jackson (JSON) ----
+spring.jackson.property-naming-strategy=SNAKE_CASE
