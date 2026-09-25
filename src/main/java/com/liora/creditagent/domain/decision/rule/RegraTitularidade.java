@@ -4,9 +4,11 @@ import com.liora.creditagent.client.dto.SolicitacaoResponse;
 import com.liora.creditagent.domain.model.ResultadoRegra;
 import com.liora.creditagent.domain.model.StatusVerificacao;
 import com.liora.creditagent.domain.model.TipoVerificacao;
+import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
+@Component
 public class RegraTitularidade implements RegraDecisao<SolicitacaoResponse> {
 
     @Override

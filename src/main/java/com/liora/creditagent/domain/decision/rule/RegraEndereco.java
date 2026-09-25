@@ -4,7 +4,9 @@ import com.liora.creditagent.client.dto.EnderecoValidacaoResponse;
 import com.liora.creditagent.domain.model.ResultadoRegra;
 import com.liora.creditagent.domain.model.StatusVerificacao;
 import com.liora.creditagent.domain.model.TipoVerificacao;
+import org.springframework.stereotype.Component;
 
+@Component
 public class RegraEndereco implements RegraDecisao<EnderecoValidacaoResponse> {
 
     @Override

@@ -4,11 +4,13 @@ import com.liora.creditagent.client.dto.SolicitacaoResponse;
 import com.liora.creditagent.domain.model.ResultadoRegra;
 import com.liora.creditagent.domain.model.StatusVerificacao;
 import com.liora.creditagent.domain.model.TipoVerificacao;
+import org.springframework.stereotype.Component;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.Period;
 
+@Component
 public class RegraIdade implements RegraDecisao<SolicitacaoResponse> {
 
     private static final int IDADE_MINIMA = 18;

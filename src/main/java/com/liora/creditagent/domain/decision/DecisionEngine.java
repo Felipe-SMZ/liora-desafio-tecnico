@@ -4,9 +4,11 @@ import com.liora.creditagent.domain.model.Decisao;
 import com.liora.creditagent.domain.model.ResultadoDecisao;
 import com.liora.creditagent.domain.model.ResultadoRegra;
 import com.liora.creditagent.domain.model.StatusVerificacao;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class DecisionEngine {
 
     public ResultadoDecisao decidir(List<ResultadoRegra> verificacoes) {

@@ -4,9 +4,11 @@ import com.liora.creditagent.client.dto.DebitosResponse;
 import com.liora.creditagent.domain.model.ResultadoRegra;
 import com.liora.creditagent.domain.model.StatusVerificacao;
 import com.liora.creditagent.domain.model.TipoVerificacao;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
+@Component
 public class RegraDebitos implements RegraDecisao<DebitosResponse> {
 
     @Override
