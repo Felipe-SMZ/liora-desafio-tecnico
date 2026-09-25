@@ -21,9 +21,9 @@ resilience4j.circuitbreaker.instances.debitosInstalacao.failure-rate-threshold=5
 resilience4j.circuitbreaker.instances.debitosInstalacao.wait-duration-in-open-state=10s
 resilience4j.circuitbreaker.instances.debitosInstalacao.permitted-number-of-calls-in-half-open-state=5
 
-# ---- Regras de decisao (parametrizaveis, evita numero magico no codigo) ----
+# ---- Limites de risco da validacao de telefone (0-100) ----
+liora.decisao.telefone.fraude-score-aprovacao=30
 liora.decisao.telefone.fraude-score-reprovacao=80
-liora.decisao.telefone.fraude-score-analise-manual=40
 
 # ---- Logging ----
 logging.level.com.liora.creditagent=INFO
