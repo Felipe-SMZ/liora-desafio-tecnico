@@ -1,11 +1,6 @@
 package com.liora.creditagent.client;
 
-import com.liora.creditagent.client.dto.BlacklistResponse;
-import com.liora.creditagent.client.dto.DebitosResponse;
-import com.liora.creditagent.client.dto.EnderecoValidacaoResponse;
-import com.liora.creditagent.client.dto.SolicitacaoResponse;
-import com.liora.creditagent.client.dto.SolicitacoesResponse;
-import com.liora.creditagent.client.dto.TelefoneValidacaoResponse;
+import com.liora.creditagent.client.dto.*;
 import com.liora.creditagent.client.exception.ServicoTemporariamenteIndisponivelException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -102,5 +97,15 @@ public class LioraApiClient {
                         }
                 )
                 .body(DebitosResponse.class);
+    }
+
+    public AvaliacaoResponse enviarAvaliacao(AvaliacaoRequest avaliacao) {
+
+        return restClient
+                .post()
+                .uri("/avaliacoes")
+                .body(avaliacao)
+                .retrieve()
+                .body(AvaliacaoResponse.class);
     }
 }

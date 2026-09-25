@@ -1,5 +1,6 @@
 package com.liora.creditagent.client;
 
+import com.liora.creditagent.client.dto.AvaliacaoRequest;
 import com.liora.creditagent.client.exception.ServicoTemporariamenteIndisponivelException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -13,6 +14,8 @@ import org.springframework.test.context.DynamicPropertySource;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -520,5 +523,89 @@ class LioraApiClientTest {
 
         assertThat(request.getHeader("Authorization"))
                 .isEqualTo("Bearer token-teste");
+    }
+
+    @Test
+    void deveEnviarAvaliacao() throws InterruptedException {
+
+        String responseBody = """
+                {
+                  "avaliacao_id": "550e8400-e29b-41d4-a716-446655440000",
+                  "status": "salvo"
+                }
+                """;
+
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .addHeader(
+                                "Content-Type",
+                                "application/json"
+                        )
+                        .setBody(responseBody)
+        );
+
+        var requestBody = new AvaliacaoRequest(
+                "SOL-2026-001",
+                "432.108.765-09",
+                "aprovado",
+                null,
+                Map.of(
+                        "idade", "aprovado",
+                        "blacklist", "aprovado",
+                        "endereco", "aprovado",
+                        "telefone", "aprovado",
+                        "debitos_instalacao", "aprovado",
+                        "titularidade", "aprovado"
+                ),
+                "Todas as verificações foram aprovadas.",
+                "v1.0.0"
+        );
+
+        var response =
+                client.enviarAvaliacao(requestBody);
+
+        assertThat(response)
+                .isNotNull();
+
+        assertThat(response.avaliacaoId())
+                .isEqualTo(
+                        UUID.fromString(
+                                "550e8400-e29b-41d4-a716-446655440000"
+                        )
+                );
+
+        assertThat(response.status())
+                .isEqualTo("salvo");
+
+        var request = mockWebServer.takeRequest();
+
+        assertThat(request.getMethod())
+                .isEqualTo("POST");
+
+        assertThat(request.getPath())
+                .isEqualTo(
+                        "/api/public/v1/avaliacoes"
+                );
+
+        assertThat(request.getHeader("Authorization"))
+                .isEqualTo("Bearer token-teste");
+
+        assertThat(request.getHeader("Content-Type"))
+                .startsWith("application/json");
+
+        String body = request.getBody().readUtf8();
+
+        assertThat(body)
+                .contains("\"solicitacao_id\":\"SOL-2026-001\"");
+
+        assertThat(body)
+                .contains("\"cpf_cnpj\":\"432.108.765-09\"");
+
+        assertThat(body)
+                .contains("\"decisao\":\"aprovado\"");
+
+        assertThat(body)
+                .contains("\"agente_versao\":\"v1.0.0\"");
     }
 }
