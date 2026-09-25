@@ -207,11 +207,26 @@ public class AvaliacaoService {
                                     + " tentativas"
                     );
                 }
+                aguardarAntesDeTentarNovamente();
             }
         }
 
         throw new IllegalStateException(
                 "Fluxo inesperado na consulta de débitos"
         );
+    }
+
+    private void aguardarAntesDeTentarNovamente() {
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+
+            throw new IllegalStateException(
+                    "Processamento interrompido durante retry de débitos",
+                    e
+            );
+        }
     }
 }
